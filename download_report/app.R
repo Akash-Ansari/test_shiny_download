@@ -9,40 +9,73 @@
 
 library(shiny)
 
-# Define UI for application that draws a histogram
+# Define UI 
 ui <- fluidPage(
-
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins 
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+    
+    sidebarPanel(
+        
+        selectizeInput("select",
+                       label = "Cylinder" ,
+                       choices = unique(mtcars$cyl),
+                       selected = 4
         ),
+        
 
-        # Show a plot of the generated distribution
-        mainPanel(
-           plotOutput("distPlot")
-        )
+        
+        
+        
+        downloadButton("report", "Generate report for selected"),
+        br(),br()
+    ),
+    
+    mainPanel(
+        DT::dataTableOutput('myTable1')
     )
+
+
 )
 
-# Define server logic required to draw a histogram
+# Define server 
 server <- function(input, output) {
-
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    
+    mtcars <- tibble::rownames_to_column(mtcars, "Name")
+    v <- reactiveValues(data = NULL)
+    
+    observeEvent(input$select, {
+        v$data <- mtcars %>% filter(cyl == input$select)
+        write.csv(v$data, "mydata.csv")
     })
+    
+    
+    output$myTable1 <- DT::renderDataTable({
+        
+        if (is.null(v$data)) return()
+        DT::datatable(v$data) 
+    })
+    
+    output$report <- downloadHandler(
+        
+        filename = ("Reports"),
+        content = function(file) {
+            k <- (input$myTable1_rows_selected)
+            fs <- c()
+            for ( i in k) 
+            {
+                path <- paste0(v$data$Name[i],".doc")
+
+                
+                rmarkdown::render(here::here("download_report", "report.Rmd"), output_file = path,
+                                  params = list(j=i),
+                                  envir = new.env(parent = globalenv())
+                )
+                fs <- c(fs,path)
+                
+            }
+            zip(file,fs)
+        }
+    )
+
+
 }
 
 # Run the application 

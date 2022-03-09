@@ -1,0 +1,48 @@
+---
+title: "Report"
+output: 
+  word_document:
+    reference_docx: New Microsoft Word Document.docx
+params:
+    j: j 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+
+
+```{r, echo=FALSE}
+library(tidyverse)
+
+```
+
+
+
+```{r, echo=FALSE}
+
+data <- read.csv(file = here::here("download_report", "mydata.csv"), header = TRUE, stringsAsFactors = FALSE) %>% select(-X)
+data[is.na(data)] <- " "
+
+
+
+```
+
+
+Name: `r data$Name[params$j]`
+
+
+
+
+
+
+
+
+
+
+
+
