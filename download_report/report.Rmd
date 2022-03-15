@@ -4,7 +4,7 @@ output:
   word_document:
     reference_docx: New Microsoft Word Document.docx
 params:
-    j: j 
+    n: NA
 ---
 
 ```{r setup, include=FALSE}
@@ -23,18 +23,16 @@ library(tidyverse)
 
 
 
-```{r, echo=FALSE}
-
-data <- read.csv(file = here::here("download_report", "mydata.csv"), header = TRUE, stringsAsFactors = FALSE) %>% select(-X)
-data[is.na(data)] <- " "
-
-
-
+```{r}
+# The `params` object is available in the document.
+params$n
 ```
 
+A plot of `params$n` random points.
 
-Name: `r data$Name[params$j]`
-
+```{r}
+plot(rnorm(params$n), rnorm(params$n))
+```
 
 
 
