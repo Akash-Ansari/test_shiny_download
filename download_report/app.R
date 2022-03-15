@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(tidyverse)
 
 # Define UI 
 ui <- fluidPage(
@@ -55,25 +56,63 @@ server <- function(input, output) {
     
     output$report <- downloadHandler(
         
-        filename = ("Reports"),
+        filename = function(){
+            paste0(v$data$Name[input$myTable1_rows_selected],".doc")
+        },
         content = function(file) {
-            k <- (input$myTable1_rows_selected)
-            fs <- c()
-            for ( i in k) 
-            {
-                path <- paste0(v$data$Name[i],".doc")
+            params = list(j=input$myTable1_rows_selected)
+            p1 = here::here("download_report", "report.Rmd")
+            p2 = here::here("download_report", "New Microsoft Word Document.docx")
+            src = c(p1, p2)
+            
+            owd <- setwd(tempdir())
+            on.exit(setwd(owd), add = TRUE)
+            file.copy(from = src, to = c('report.Rmd', 'New Microsoft Word Document.docx'), overwrite = TRUE)
+            # browser()
+            # k <- (input$myTable1_rows_selected)
+            # fs <- c()
+            # for ( i in k) 
+            # {
+                # path <- paste0(v$data$Name[k],".doc")
 
                 
-                rmarkdown::render(here::here("download_report", "report.Rmd"), output_file = path,
-                                  params = list(j=i),
+                rmarkdown::render(here::here("download_report", "report.Rmd"), output_file = file,
+                                  params = params,
                                   envir = new.env(parent = globalenv())
                 )
-                fs <- c(fs,path)
-                
-            }
-            zip(file,fs)
+            #     fs <- c(fs,path)
+            #     
+            # # }
+            # zip(file,fs)
         }
     )
+    
+    
+    # output$report <- downloadHandler(
+    #     
+    #     filename = function(){
+    #         paste0(input$select,".doc")
+    #     },
+    #     content = function(file) {
+    #         params = list(j = input$select)
+    #         
+    #         p1 = "C:\\Users\\mansari\\University of Mississippi Medical Center\\Pramod Anugu - Exam 4\\Weekly Reports\\Other Reports\\Blood Pressure\\report.Rmd"
+    #         p2 = "C:\\Users\\mansari\\University of Mississippi Medical Center\\Pramod Anugu - Exam 4\\Weekly Reports\\Other Reports\\Blood Pressure\\CARDIA EXAM X.docx"
+    #         src = c(p1, p2)
+    #         
+    #         owd <- setwd(tempdir())
+    #         on.exit(setwd(owd), add = TRUE)
+    #         file.copy(from = src, to = c('report.Rmd', 'CARDIA EXAM X.docx'), overwrite = TRUE)
+    #         
+    #         rmarkdown::render('report.Rmd', output_file = file,
+    #                           params = params,
+    #                           envir = new.env(parent = globalenv())
+    #         )
+    #         
+    #         
+    #         
+    #     }
+    # )
 
 
 }
